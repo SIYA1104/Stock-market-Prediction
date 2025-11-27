@@ -48,7 +48,16 @@ Predicts **next-day closing price** using ML models:
 - RMSE comparison  
 - Actual vs Predicted graph  
 - Feature importance table  
-- Downloadable CSV file  
+- Downloadable CSV file
+
+### ✅ 4. RSI Momentum Analysis
+- Calculates **RSI (Relative Strength Index)** with 14-period default
+- Identifies:
+  - 🔴 **Overbought Signal:** RSI > 70 (potential sell)
+  - 🟢 **Oversold Signal:** RSI < 30 (potential buy)
+- Interactive RSI chart with signal zones
+- Current RSI status indicator
+- Historical overbought/oversold events  
 
 ---
 
@@ -69,15 +78,33 @@ Predicts **next-day closing price** using ML models:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
-## 2. Create Virtual Environment
-python -m venv env
-## 3. Activate Environment
-env\Scripts\activate.bat
-## 4. Install Dependencies
-pip install -r requirements.txt
+git clone https://github.com/SIYA1104/Stock-market-Prediction.git
+cd Stock-market-Prediction
+```
 
+### 2. Create Virtual Environment
+```bash
+python -m venv env
+```
+
+### 3. Activate Environment
+```bash
+# Windows
+env\Scripts\activate
+
+# macOS/Linux
+source env/bin/activate
+```
+
+### 4. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Run the Application
+```bash
 streamlit run app.py
-http://localhost:8501
+```
+
+Open your browser and go to `http://localhost:8501`
 

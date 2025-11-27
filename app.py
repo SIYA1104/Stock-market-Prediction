@@ -112,8 +112,16 @@ if df is None:
     st.error("No usable price data found for this ticker. Try a different symbol (e.g. AAPL, MSFT, TCS.NS).")
     st.stop()
 
-# ---- Tabs for the three functions ----
-tab1, tab2, tab3 = st.tabs(["Price Chart", "SMA & Signals", "Simple Predictor"])
+# ---- RSI calculation function ----
+def calculate_rsi(prices, period=14):
+    delta = prices.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    return 100 - (100 / (1 + rs))
+
+# ---- Tabs for the four functions ----
+tab1, tab2, tab3, tab4 = st.tabs(["Price Chart", "SMA & Signals", "Simple Predictor", "RSI Analysis"])
 
 with tab1:
     st.subheader(f"{ticker} — Price chart (last {len(df)} days)")
@@ -240,6 +248,42 @@ with tab3:
             download_df['index'] = download_df.index
             csv = download_df.to_csv(index=False).encode('utf-8')
             st.download_button("Download test-set results CSV", csv, file_name=f"{ticker}_predictions.csv", mime='text/csv')
+
+with tab4:
+    st.subheader("RSI (Relative Strength Index) Analysis")
+    data = df.copy()
+    data['RSI'] = calculate_rsi(data['Close'])
+    data.dropna(inplace=True)
+    
+    if data.empty:
+        st.warning("Not enough data to calculate RSI.")
+    else:
+        # RSI Chart
+        fig_rsi = go.Figure()
+        fig_rsi.add_trace(go.Scatter(x=data.index, y=data['RSI'], name='RSI', line=dict(color='purple')))
+        fig_rsi.add_hline(y=70, line_dash="dash", line_color="red", annotation_text="Overbought (70)")
+        fig_rsi.add_hline(y=30, line_dash="dash", line_color="green", annotation_text="Oversold (30)")
+        fig_rsi.update_layout(title="RSI Indicator", yaxis_title="RSI", height=400)
+        st.plotly_chart(fig_rsi, use_container_width=True)
+        
+        # Current RSI status
+        current_rsi = data['RSI'].iloc[-1]
+        if current_rsi > 70:
+            st.error(f"Current RSI: {current_rsi:.2f} - OVERBOUGHT (Consider Selling)")
+        elif current_rsi < 30:
+            st.success(f"Current RSI: {current_rsi:.2f} - OVERSOLD (Consider Buying)")
+        else:
+            st.info(f"Current RSI: {current_rsi:.2f} - NEUTRAL")
+        
+        # RSI signals
+        overbought = data[data['RSI'] > 70]
+        oversold = data[data['RSI'] < 30]
+        st.write(f"Overbought signals (RSI > 70): {len(overbought)} — Last 5:")
+        if not overbought.empty:
+            st.dataframe(overbought[['Close', 'RSI']].tail(5))
+        st.write(f"Oversold signals (RSI < 30): {len(oversold)} — Last 5:")
+        if not oversold.empty:
+            st.dataframe(oversold[['Close', 'RSI']].tail(5))
 
 # ---- Footer / tips ----
 st.markdown("---")
